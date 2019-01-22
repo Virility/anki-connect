@@ -840,8 +840,29 @@ class AnkiConnect:
                 intervals.append(interval)
 
         return intervals
+    @api()
+    def addModel(self, noteModel):  
+        model = self.collection().models.byName(noteModel['name'])
+        if model is None:
+            newModel = self.collection().models.new(noteModel['name'])
+            field = self.collection().models.newField(_("Front"))
+            self.collection().models.addField(newModel, field)
+            field = self.collection().models.newField(_("Back"))
+            self.collection().models.addField(newModel, field)
 
+            for templateL in noteModel['tmpls']:
+                template = self.collection().models.newTemplate(_(templateL['name']))
+                template['qfmt'] = templateL['qfmt']
+                template['afmt'] = templateL['afmt']
+                self.collection().models.addTemplate(newModel, template)
 
+            newModel['id'] = int(time() * 1000)
+            newModel['css'] = noteModel['css']
+
+            self.collection().models.add(newModel)
+            return True;
+        else:
+            raise Exception('model already exists: {}'.format(model['name']))
 
     @api()
     def modelNames(self):
